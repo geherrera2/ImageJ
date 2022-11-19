@@ -1,4 +1,5 @@
 package ij.plugin;
+
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
@@ -8,35 +9,46 @@ import ij.plugin.frame.*;
 import ij.measure.ResultsTable;
 import java.awt.*;
 
-/** This plugin implements most of the commands
-	in the Edit/Options sub-menu. */
+/**
+ * This plugin implements most of the commands
+ * in the Edit/Options sub-menu.
+ */
 public class Options implements PlugIn {
 
- 	public void run(String arg) {
-		if (arg.equals("fresh-start"))
-			{freshStart(); return;}
-		if (arg.equals("misc"))
-			{miscOptions(); return;}
-		else if (arg.equals("line"))
-			{lineWidth(); return;}
-		else if (arg.equals("io"))
-			{io(); return;}
-		else if (arg.equals("conv"))
-			{conversions(); return;}
-		else if (arg.equals("dicom"))
-			{dicom(); return;}
-		else if (arg.equals("reset"))
-			{reset(); return;}
+	public void run(String arg) {
+		if (arg.equals("fresh-start")) {
+			freshStart();
+			return;
+		}
+		if (arg.equals("misc")) {
+			miscOptions();
+			return;
+		} else if (arg.equals("line")) {
+			lineWidth();
+			return;
+		} else if (arg.equals("io")) {
+			io();
+			return;
+		} else if (arg.equals("conv")) {
+			conversions();
+			return;
+		} else if (arg.equals("dicom")) {
+			dicom();
+			return;
+		} else if (arg.equals("reset")) {
+			reset();
+			return;
+		}
 	}
-				
+
 	// Miscellaneous Options
 	void miscOptions() {
-		String key = IJ.isMacintosh()?"command":"control";
+		String key = IJ.isMacintosh() ? "command" : "control";
 		GenericDialog gd = new GenericDialog("Miscellaneous Options");
-		gd.addStringField("Divide by zero value:", ""+FloatBlitter.divideByZeroValue, 10);
+		gd.addStringField("Divide by zero value:", "" + FloatBlitter.divideByZeroValue, 10);
 		gd.addCheckbox("Use pointer cursor", Prefs.usePointerCursor);
 		gd.addCheckbox("Hide \"Process Stack?\" dialog", IJ.hideProcessStackDialog);
-		gd.addCheckbox("Require "+key+" key for shortcuts", Prefs.requireControlKey);
+		gd.addCheckbox("Require " + key + " key for shortcuts", Prefs.requireControlKey);
 		gd.addCheckbox("Move isolated plugins to Misc. menu", Prefs.moveToMisc);
 		if (!IJ.isMacOSX())
 			gd.addCheckbox("Run single instance listener", Prefs.runSocketListener);
@@ -48,12 +60,12 @@ public class Options implements PlugIn {
 			gd.addCheckbox("Save window locations", !Prefs.doNotSaveWindowLocations);
 		gd.addCheckbox("Non-blocking filter dialogs", Prefs.nonBlockingFilterDialogs);
 		gd.addCheckbox("Debug mode", IJ.debugMode);
-		//gd.addCheckbox("Modern mode", Prefs.modernMode);
-		gd.addHelp(IJ.URL+"/docs/menus/edit.html#misc");
+		// gd.addCheckbox("Modern mode", Prefs.modernMode);
+		gd.addHelp(IJ.URL + "/docs/menus/edit.html#misc");
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
-			
+
 		String divValue = gd.getNextString();
 		if (divValue.equalsIgnoreCase("infinity") || divValue.equalsIgnoreCase("infinite"))
 			FloatBlitter.divideByZeroValue = Float.POSITIVE_INFINITY;
@@ -63,13 +75,16 @@ public class Options implements PlugIn {
 			FloatBlitter.divideByZeroValue = Float.MAX_VALUE;
 		else {
 			Float f;
-			try {f = Float.valueOf(divValue);}
-			catch (NumberFormatException e) {f = null;}
-			if (f!=null)
+			try {
+				f = Float.valueOf(divValue);
+			} catch (NumberFormatException e) {
+				f = null;
+			}
+			if (f != null)
 				FloatBlitter.divideByZeroValue = f.floatValue();
 		}
-		IJ.register(FloatBlitter.class); 
-			
+		IJ.register(FloatBlitter.class);
+
 		Prefs.usePointerCursor = gd.getNextBoolean();
 		IJ.hideProcessStackDialog = gd.getNextBoolean();
 		Prefs.requireControlKey = gd.getNextBoolean();
@@ -84,20 +99,22 @@ public class Options implements PlugIn {
 			Prefs.doNotSaveWindowLocations = !gd.getNextBoolean();
 		Prefs.nonBlockingFilterDialogs = gd.getNextBoolean();
 		IJ.setDebugMode(gd.getNextBoolean());
-		//Prefs.modernMode = gd.getNextBoolean();
+		// Prefs.modernMode = gd.getNextBoolean();
 	}
 
 	void lineWidth() {
-		int width = (int)IJ.getNumber("Line Width:", Line.getWidth());
-		if (width==IJ.CANCELED) return;
+		int width = (int) IJ.getNumber("Line Width:", Line.getWidth());
+		if (width == IJ.CANCELED)
+			return;
 		Line.setWidth(width);
 		LineWidthAdjuster.update();
 		ImagePlus imp = WindowManager.getCurrentImage();
-		if (imp!=null && imp.isProcessor()) {
+		if (imp != null && imp.isProcessor()) {
 			ImageProcessor ip = imp.getProcessor();
 			ip.setLineWidth(Line.getWidth());
-            Roi roi = imp.getRoi();
-            if (roi!=null && roi.isLine()) imp.draw();
+			Roi roi = imp.getRoi();
+			if (roi != null && roi.isLine())
+				imp.draw();
 		}
 	}
 
@@ -112,7 +129,7 @@ public class Options implements PlugIn {
 			gd.addCheckbox("Use_file chooser to import sequences", Prefs.useFileChooser);
 		gd.addCheckbox("Save TIFF and raw in Intel byte order", Prefs.intelByteOrder);
 		gd.addCheckbox("Skip dialog when opening .raw files", Prefs.skipRawDialog);
-		
+
 		gd.setInsets(15, 20, 0);
 		gd.addMessage("Results Table Options");
 		gd.setInsets(3, 40, 0);
@@ -123,15 +140,17 @@ public class Options implements PlugIn {
 		gd.addCheckbox("Save_column headers", !Prefs.dontSaveHeaders);
 		gd.setInsets(0, 40, 0);
 		gd.addCheckbox("Save_row numbers", !Prefs.dontSaveRowNumbers);
-		
+
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
-		int quality = (int)gd.getNextNumber();
-		if (quality<0) quality = 0;
-		if (quality>100) quality = 100;
+		int quality = (int) gd.getNextNumber();
+		if (quality < 0)
+			quality = 0;
+		if (quality > 100)
+			quality = 100;
 		FileSaver.setJpegQuality(quality);
-		int transparentIndex = (int)gd.getNextNumber();
+		int transparentIndex = (int) gd.getNextNumber();
 		Prefs.setTransparentIndex(transparentIndex);
 		String extension = gd.getNextString();
 		if (!extension.startsWith("."))
@@ -139,7 +158,7 @@ public class Options implements PlugIn {
 		Prefs.set("options.ext", extension);
 		boolean useJFileChooser2 = Prefs.useJFileChooser;
 		Prefs.useJFileChooser = gd.getNextBoolean();
-		if (Prefs.useJFileChooser!=useJFileChooser2)
+		if (Prefs.useJFileChooser != useJFileChooser2)
 			Prefs.jFileChooserSettingChanged = true;
 		if (!IJ.isMacOSX())
 			Prefs.useFileChooser = gd.getNextBoolean();
@@ -156,13 +175,14 @@ public class Options implements PlugIn {
 	// Conversion Options
 	void conversions() {
 		double[] weights = ColorProcessor.getWeightingFactors();
-		boolean weighted = !(weights[0]==1d/3d && weights[1]==1d/3d && weights[2]==1d/3d);
-		//boolean weighted = !(Math.abs(weights[0]-1d/3d)<0.0001 && Math.abs(weights[1]-1d/3d)<0.0001 && Math.abs(weights[2]-1d/3d)<0.0001);
+		boolean weighted = !(weights[0] == 1d / 3d && weights[1] == 1d / 3d && weights[2] == 1d / 3d);
+		// boolean weighted = !(Math.abs(weights[0]-1d/3d)<0.0001 &&
+		// Math.abs(weights[1]-1d/3d)<0.0001 && Math.abs(weights[2]-1d/3d)<0.0001);
 		GenericDialog gd = new GenericDialog("Conversion Options");
 		gd.addCheckbox("Scale when converting", ImageConverter.getDoScaling());
 		String prompt = "Weighted RGB conversions";
 		if (weighted)
-			prompt += " (" + IJ.d2s(weights[0]) + "," + IJ.d2s(weights[1]) + ","+ IJ.d2s(weights[2]) + ")";
+			prompt += " (" + IJ.d2s(weights[0]) + "," + IJ.d2s(weights[1]) + "," + IJ.d2s(weights[2]) + ")";
 		gd.addCheckbox(prompt, weighted);
 		gd.showDialog();
 		if (gd.wasCanceled())
@@ -170,12 +190,12 @@ public class Options implements PlugIn {
 		ImageConverter.setDoScaling(gd.getNextBoolean());
 		Prefs.weightedColor = gd.getNextBoolean();
 		if (!Prefs.weightedColor)
-			ColorProcessor.setWeightingFactors(1d/3d, 1d/3d, 1d/3d);
+			ColorProcessor.setWeightingFactors(1d / 3d, 1d / 3d, 1d / 3d);
 		else if (Prefs.weightedColor && !weighted)
 			ColorProcessor.setWeightingFactors(0.299, 0.587, 0.114);
 		return;
 	}
-			
+
 	// replaced by AppearanceOptions class
 	void appearance() {
 	}
@@ -200,20 +220,21 @@ public class Options implements PlugIn {
 		Prefs.rotateYZ = gd.getNextBoolean();
 		Prefs.flipXZ = gd.getNextBoolean();
 	}
-		
-	/** Close all images, empty ROI Manager, clear the
-		 Results table, clears the Log window and sets
-		 "Black background" 'true'.
-	*/
+
+	/**
+	 * Close all images, empty ROI Manager, clear the
+	 * Results table, clears the Log window and sets
+	 * "Black background" 'true'.
+	 */
 	private void freshStart() {
 		String options = Macro.getOptions();
 		boolean keepImages = false;
 		boolean keepResults = false;
 		boolean keepRois = false;
-		if (options!=null) {
+		if (options != null) {
 			options = options.toLowerCase();
-			keepImages = options.contains("images");			
-			keepResults = options.contains("results");			
+			keepImages = options.contains("images");
+			keepResults = options.contains("results");
 			keepRois = options.contains("rois");
 		}
 		if (!keepImages) {
@@ -226,11 +247,11 @@ public class Options implements PlugIn {
 		}
 		if (!keepRois) {
 			RoiManager rm = RoiManager.getInstance();
-			if (rm!=null)
+			if (rm != null)
 				rm.reset();
 		}
-		if (WindowManager.getWindow("Log")!=null)
-   			IJ.log("\\Clear");
+		if (WindowManager.getWindow("Log") != null)
+			IJLog.log("\\Clear");
 		Prefs.blackBackground = true;
 	}
 

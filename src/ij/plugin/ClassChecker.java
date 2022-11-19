@@ -1,4 +1,5 @@
-package  ij.plugin;
+package ij.plugin;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +59,7 @@ public class ClassChecker implements PlugIn {
 	}
 
 	void log(String path) {
-		IJ.log("Duplicate plugin: " + path);
+		IJLog.log("Duplicate plugin: " + path);
 	}
 
 	/**

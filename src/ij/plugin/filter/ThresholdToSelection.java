@@ -4,6 +4,7 @@
  * Written and public domained in June 2006 by Johannes E. Schindelin
 */
 package ij.plugin.filter;
+
 import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.Roi;
@@ -22,34 +23,39 @@ public class ThresholdToSelection implements PlugInFilter {
 	float min, max;
 	int w, h;
 	boolean showStatus;
-	final static double PROGRESS_FRACTION_OUTLINING = 0.9;  //fraction of progress bar for the first phase (tracing outlines)
-	
+	final static double PROGRESS_FRACTION_OUTLINING = 0.9; // fraction of progress bar for the first phase (tracing
+															// outlines)
+
 	public void run(ImageProcessor ip) {
 		showStatus = true;
 		image.setRoi(convert(ip));
 	}
-	
-	/** Returns a selection created from the thresholded pixels in the
-		specified image, or null if there are no thresholded pixels. */
+
+	/**
+	 * Returns a selection created from the thresholded pixels in the
+	 * specified image, or null if there are no thresholded pixels.
+	 */
 	public static Roi run(ImagePlus imp) {
 		ThresholdToSelection tts = new ThresholdToSelection();
 		return tts.convert(imp.getProcessor());
 	}
-	
-	/** Returns a selection created from the thresholded pixels in the
-		specified image, or null if there are no thresholded pixels. */
+
+	/**
+	 * Returns a selection created from the thresholded pixels in the
+	 * specified image, or null if there are no thresholded pixels.
+	 */
 	public Roi convert(ImageProcessor ip) {
 		this.ip = ip;
-		min = (float)ip.getMinThreshold();
-		max = (float)ip.getMaxThreshold();
+		min = (float) ip.getMinThreshold();
+		max = (float) ip.getMaxThreshold();
 		w = ip.getWidth();
 		h = ip.getHeight();
 		return getRoi();
 	}
 
 	final boolean selected(int x, int y) {
-		float v = ip.getf(x,y);
-		return v>=min && v<=max;
+		float v = ip.getf(x, y);
+		return v >= min && v <= max;
 	}
 
 	/*
@@ -61,7 +67,8 @@ public class ThresholdToSelection implements PlugInFilter {
 	static class Outline {
 		int[] x, y;
 		int first, last, reserved;
-		final int GROW = 10;  // default extra (spare) space when enlarging arrays (similar performance with 6-20)
+		final int GROW = 10; // default extra (spare) space when enlarging arrays (similar performance with
+								// 6-20)
 
 		public Outline() {
 			reserved = GROW;
@@ -70,16 +77,20 @@ public class ThresholdToSelection implements PlugInFilter {
 			first = last = GROW / 2;
 		}
 
-		/** Makes sure that enough free space is available at the beginning and end of the list, by enlarging the arrays if required */
+		/**
+		 * Makes sure that enough free space is available at the beginning and end of
+		 * the list, by enlarging the arrays if required
+		 */
 		private void needs(int neededAtBegin, int neededAtEnd) {
 			if (neededAtBegin > first || neededAtEnd > reserved - last) {
-				int extraSpace = Math.max(GROW, Math.abs(x[last-1] - x[first])); //reserve more space for outlines that span large x range
+				int extraSpace = Math.max(GROW, Math.abs(x[last - 1] - x[first])); // reserve more space for outlines
+																					// that span large x range
 				int newSize = reserved + neededAtBegin + neededAtEnd + extraSpace;
-				int newFirst = neededAtBegin + extraSpace/2;
+				int newFirst = neededAtBegin + extraSpace / 2;
 				int[] newX = new int[newSize];
 				int[] newY = new int[newSize];
-				System.arraycopy(x, first, newX, newFirst, last-first);
-				System.arraycopy(y, first, newY, newFirst, last-first);
+				System.arraycopy(x, first, newX, newFirst, last - first);
+				System.arraycopy(y, first, newY, newFirst, last - first);
 				x = newX;
 				y = newY;
 				last += newFirst - first;
@@ -90,11 +101,12 @@ public class ThresholdToSelection implements PlugInFilter {
 
 		/** Adds point x, y at the end of the list */
 		public void append(int x, int y) {
-			if (last-first>=2 && collinear(this.x[last-2], this.y[last-2], this.x[last-1], this.y[last-1], x , y)) {
-				this.x[last-1] = x; //replace previous point
-				this.y[last-1] = y;
+			if (last - first >= 2
+					&& collinear(this.x[last - 2], this.y[last - 2], this.x[last - 1], this.y[last - 1], x, y)) {
+				this.x[last - 1] = x; // replace previous point
+				this.y[last - 1] = y;
 			} else {
-				needs(0, 1); //new point
+				needs(0, 1); // new point
 				this.x[last] = x;
 				this.y[last] = y;
 				last++;
@@ -103,22 +115,27 @@ public class ThresholdToSelection implements PlugInFilter {
 
 		/** Adds point x, y at the beginning of the list */
 		public void prepend(int x, int y) {
-			if (last-first>=2 && collinear(this.x[first+1], this.y[first+1], this.x[first], this.y[first], x , y)) {
-				this.x[first] = x; //replace previous point
+			if (last - first >= 2
+					&& collinear(this.x[first + 1], this.y[first + 1], this.x[first], this.y[first], x, y)) {
+				this.x[first] = x; // replace previous point
 				this.y[first] = y;
 			} else {
-				needs(1, 0); //new point
+				needs(1, 0); // new point
 				first--;
 				this.x[first] = x;
 				this.y[first] = y;
 			}
 		}
 
-		/** Merge with another Outline by adding it at the end. Thereafter, the other outline must not be used any more. */
+		/**
+		 * Merge with another Outline by adding it at the end. Thereafter, the other
+		 * outline must not be used any more.
+		 */
 		public void append(Outline o) {
 			int size = last - first;
 			int oSize = o.last - o.first;
-			if (size <= o.first && oSize > reserved - last) { // we don't have enough space in our own array but in that of 'o'
+			if (size <= o.first && oSize > reserved - last) { // we don't have enough space in our own array but in that
+																// of 'o'
 				System.arraycopy(x, first, o.x, o.first - size, size); // so prepend our own data to that of 'o'
 				System.arraycopy(y, first, o.y, o.first - size, size);
 				x = o.x;
@@ -126,7 +143,7 @@ public class ThresholdToSelection implements PlugInFilter {
 				first = o.first - size;
 				last = o.last;
 				reserved = o.reserved;
-			} else {  // append to our own array
+			} else { // append to our own array
 				needs(0, oSize);
 				System.arraycopy(o.x, o.first, x, last, oSize);
 				System.arraycopy(o.y, o.first, y, last, oSize);
@@ -134,19 +151,23 @@ public class ThresholdToSelection implements PlugInFilter {
 			}
 		}
 
-		/** Merge with another Outline by adding it at the beginning. Thereafter, the other outline must not be used any more. */
+		/**
+		 * Merge with another Outline by adding it at the beginning. Thereafter, the
+		 * other outline must not be used any more.
+		 */
 		public void prepend(Outline o) {
 			int size = last - first;
 			int oSize = o.last - o.first;
-			if (size <= o.reserved - o.last && oSize > first) { // we don't have enough space in our own array but in that of 'o'
-				System.arraycopy(x, first, o.x, o.last, size);  // so append our own data to that of 'o'
+			if (size <= o.reserved - o.last && oSize > first) { // we don't have enough space in our own array but in
+																// that of 'o'
+				System.arraycopy(x, first, o.x, o.last, size); // so append our own data to that of 'o'
 				System.arraycopy(y, first, o.y, o.last, size);
 				x = o.x;
 				y = o.y;
 				first = o.first;
 				last = o.last + size;
 				reserved = o.reserved;
-			} else {  // prepend to our own array
+			} else { // prepend to our own array
 				needs(oSize, 0);
 				first -= oSize;
 				System.arraycopy(o.x, o.first, x, first, oSize);
@@ -155,9 +176,10 @@ public class ThresholdToSelection implements PlugInFilter {
 		}
 
 		public Polygon getPolygon() {
-			// optimize out intermediate points of straight lines (created, e.g., by merging outlines)
-			int i, j=first+1;
-			for (i=first+1; i+1<last; j++) {
+			// optimize out intermediate points of straight lines (created, e.g., by merging
+			// outlines)
+			int i, j = first + 1;
+			for (i = first + 1; i + 1 < last; j++) {
 				if (collinear(x[j - 1], y[j - 1], x[j], y[j], x[j + 1], y[j + 1])) {
 					// merge i + 1 into i
 					last--;
@@ -188,46 +210,58 @@ public class ThresholdToSelection implements PlugInFilter {
 		}
 
 		/** Returns whether three points are on one straight line */
-		boolean collinear (int x1, int y1, int x2, int y2, int x3, int y3) {
-			return (x2-x1)*(y3-y2) == (y2-y1)*(x3-x2);
+		boolean collinear(int x1, int y1, int x2, int y2, int x3, int y3) {
+			return (x2 - x1) * (y3 - y2) == (y2 - y1) * (x3 - x2);
 		}
 
 		public String toString() {
 			String res = "[first:" + first + ",last:" + last +
-				",reserved:" + reserved + ":";
-			if (last > x.length) System.err.println("ERROR!");
-			int nmax = 10;	//don't print more coordinates than this
+					",reserved:" + reserved + ":";
+			if (last > x.length)
+				System.err.println("ERROR!");
+			int nmax = 10; // don't print more coordinates than this
 			for (int i = first; i < last && i < x.length; i++) {
-				if (last-first > nmax && i-first > nmax/2) {
-					i = last - nmax/2;
+				if (last - first > nmax && i - first > nmax / 2) {
+					i = last - nmax / 2;
 					res += "...";
-					nmax = last-first; //dont check again
+					nmax = last - first; // dont check again
 				} else
 					res += "(" + x[i] + "," + y[i] + ")";
-				}
+			}
 			return res + "]";
 		}
 	}
 
 	/*
-	 * Construct all outlines simultaneously by traversing the rows from top to bottom.
+	 * Construct all outlines simultaneously by traversing the rows from top to
+	 * bottom.
 	 * The points are added such that for each pair of consecutive points, the inner
 	 * part is on the left, i.e., the outline encloses filled areas in the
-	 * counterclockwise direction. The outline of empty areas (holes) runs clockwise.
+	 * counterclockwise direction. The outline of empty areas (holes) runs
+	 * clockwise.
 	 *
-	 * thisRow[x + 1] indicates whether the pixel at (x, y) is selected (inside threshold bounds).
+	 * thisRow[x + 1] indicates whether the pixel at (x, y) is selected (inside
+	 * threshold bounds).
 	 * prevRow[x + 1] indicates whether the pixel at (x, y - 1) is selected.
 	 *
-	 * outline[x] is the outline that is currently unclosed at the top-left corner of pixel(x, y);
+	 * outline[x] is the outline that is currently unclosed at the top-left corner
+	 * of pixel(x, y);
 	 * outline[x + 1] is at the top-right corner of pixel(x, y).
 	 *
-	 * If the pixel (x, y - 1) has an outline at its bottom and right sides (merging in its
-	 * lower right corner) and this outline should continue as left & top edges of pixel (x + 1, y),
-	 * <code>xAfterLowerRightCorner</code> is set to x + 1 (the pixel coordinate where this
-	 * has to be taken into account), and <code>oAfterLowerRightCorner</code> is the outline that
-	 * should continue at the left side of pixel (xAfterLowerRightCorner, y) to higher y.
-	 * (Without the code with xAfterLowerRightCorner, etc., this case of 8-connected pixels
-	 * would result in disjunct outlines, e.g. a one-pixel-wide line with angle between
+	 * If the pixel (x, y - 1) has an outline at its bottom and right sides (merging
+	 * in its
+	 * lower right corner) and this outline should continue as left & top edges of
+	 * pixel (x + 1, y),
+	 * <code>xAfterLowerRightCorner</code> is set to x + 1 (the pixel coordinate
+	 * where this
+	 * has to be taken into account), and <code>oAfterLowerRightCorner</code> is the
+	 * outline that
+	 * should continue at the left side of pixel (xAfterLowerRightCorner, y) to
+	 * higher y.
+	 * (Without the code with xAfterLowerRightCorner, etc., this case of 8-connected
+	 * pixels
+	 * would result in disjunct outlines, e.g. a one-pixel-wide line with angle
+	 * between
 	 * 0 and -90 deg would be converted to many separate rectangular segments).
 	 */
 	Roi getRoi() {
@@ -236,30 +270,35 @@ public class ThresholdToSelection implements PlugInFilter {
 		boolean[] prevRow, thisRow;
 		ArrayList polygons = new ArrayList();
 		Outline[] outline;
-		int progressInc = Math.max(h/50, 1);
+		int progressInc = Math.max(h / 50, 1);
 
 		prevRow = new boolean[w + 2];
 		thisRow = new boolean[w + 2];
 		outline = new Outline[w + 1];
 
 		for (int y = 0; y <= h; y++) {
-			boolean[] b = prevRow; prevRow = thisRow; thisRow = b;
-			int xAfterLowerRightCorner = -1;	   //x at right of 8-connected (not 4-connected) pixels NW-SE
-			Outline oAfterLowerRightCorner = null; //there, continue this outline towards south
+			boolean[] b = prevRow;
+			prevRow = thisRow;
+			thisRow = b;
+			int xAfterLowerRightCorner = -1; // x at right of 8-connected (not 4-connected) pixels NW-SE
+			Outline oAfterLowerRightCorner = null; // there, continue this outline towards south
 			thisRow[1] = y < h ? selected(0, y) : false;
 			for (int x = 0; x <= w; x++) {
 				if (y < h && x < w - 1)
-					thisRow[x + 2] = selected(x + 1, y);  //we need to read one pixel ahead
+					thisRow[x + 2] = selected(x + 1, y); // we need to read one pixel ahead
 				else if (x < w - 1)
 					thisRow[x + 2] = false;
-				//IJ.log(x+","+y+": "+thisRow[x + 1]+(x==xAfterLowerRightCorner ? " Corner" : "")+" left="+outline[x]+(x < w ? " right="+outline[x+1] : ""));
-				if (thisRow[x + 1]) {  // i.e., pixel (x,y) is selected
+				// IJLog.log(x+","+y+": "+thisRow[x + 1]+(x==xAfterLowerRightCorner ? " Corner"
+				// : "")+" left="+outline[x]+(x < w ? " right="+outline[x+1] : ""));
+				if (thisRow[x + 1]) { // i.e., pixel (x,y) is selected
 					if (!prevRow[x + 1]) {
 						// Upper edge of selected area:
 						// - left and right outlines are null: new outline
 						// - left null: append (line to left)
-						// - right null: prepend (line to right), or prepend&append (after lower right corner, two borders from one corner)
-						// - left == right: close (end of hole above) unless we can continue at the right
+						// - right null: prepend (line to right), or prepend&append (after lower right
+						// corner, two borders from one corner)
+						// - left == right: close (end of hole above) unless we can continue at the
+						// right
 						// - left != right: merge (prepend) unless we can continue at the right
 						if (outline[x] == null) {
 							if (outline[x + 1] == null) {
@@ -267,7 +306,7 @@ public class ThresholdToSelection implements PlugInFilter {
 								outline[x].append(x + 1, y);
 								outline[x].append(x, y);
 							} else {
-								outline[x] = outline[x + 1];  // line from top-right to top-left
+								outline[x] = outline[x + 1]; // line from top-right to top-left
 								outline[x + 1] = null;
 								outline[x].append(x, y);
 							}
@@ -284,29 +323,30 @@ public class ThresholdToSelection implements PlugInFilter {
 							}
 						} else if (outline[x + 1] == outline[x]) {
 							if (x < w - 1 && y < h && x != xAfterLowerRightCorner
-									&& !thisRow[x + 2] && prevRow[x + 2]) { //at lower right corner & next pxl deselected
+									&& !thisRow[x + 2] && prevRow[x + 2]) { // at lower right corner & next pxl
+																			// deselected
 								outline[x] = null;
-								//outline[x+1] unchanged
-								outline[x + 1].prepend(x + 1,y);
+								// outline[x+1] unchanged
+								outline[x + 1].prepend(x + 1, y);
 								xAfterLowerRightCorner = x + 1;
 								oAfterLowerRightCorner = outline[x + 1];
 							} else {
-								//System.err.println("subtract " + outline[x]);
+								// System.err.println("subtract " + outline[x]);
 								polygons.add(outline[x].getPolygon()); // MINUS (add inner hole)
 								outline[x + 1] = null;
 								outline[x] = (x == xAfterLowerRightCorner) ? oAfterLowerRightCorner : null;
 							}
 						} else {
-							outline[x].prepend(outline[x + 1]);		// merge
+							outline[x].prepend(outline[x + 1]); // merge
 							for (int x1 = 0; x1 <= w; x1++)
 								if (x1 != x + 1 && outline[x1] == outline[x + 1]) {
-									outline[x1] = outline[x];        // after merging, replace old with merged
-									outline[x + 1] = null;           // no line continues at the right
+									outline[x1] = outline[x]; // after merging, replace old with merged
+									outline[x + 1] = null; // no line continues at the right
 									outline[x] = (x == xAfterLowerRightCorner) ? oAfterLowerRightCorner : null;
 									break;
 								}
 							if (outline[x + 1] != null)
-								throw new RuntimeException("assertion failed");							
+								throw new RuntimeException("assertion failed");
 						}
 					}
 					if (!thisRow[x]) {
@@ -315,12 +355,13 @@ public class ThresholdToSelection implements PlugInFilter {
 							throw new RuntimeException("assertion failed");
 						outline[x].append(x, y + 1);
 					}
-				} else {  // !thisRow[x + 1], i.e., pixel (x,y) is deselected
+				} else { // !thisRow[x + 1], i.e., pixel (x,y) is deselected
 					if (prevRow[x + 1]) {
 						// Lower edge of selected area:
 						// - left and right outlines are null: new outline
 						// - left == null: prepend
-						// - right == null: append, or append&prepend (after lower right corner, two borders from one corner)
+						// - right == null: append, or append&prepend (after lower right corner, two
+						// borders from one corner)
 						// - right == left: close unless we can continue at the right
 						// - right != left: merge (append) unless we can continue at the right
 						if (outline[x] == null) {
@@ -329,9 +370,9 @@ public class ThresholdToSelection implements PlugInFilter {
 								outline[x].append(x, y);
 								outline[x].append(x + 1, y);
 							} else {
-									outline[x] = outline[x + 1];
-									outline[x + 1] = null;
-									outline[x].prepend(x, y);
+								outline[x] = outline[x + 1];
+								outline[x + 1] = null;
+								outline[x].prepend(x, y);
 							}
 						} else if (outline[x + 1] == null) {
 							if (x == xAfterLowerRightCorner) {
@@ -345,34 +386,36 @@ public class ThresholdToSelection implements PlugInFilter {
 								outline[x + 1].append(x + 1, y);
 							}
 						} else if (outline[x + 1] == outline[x]) {
-							//System.err.println("add " + outline[x]);
+							// System.err.println("add " + outline[x]);
 							if (x < w - 1 && y < h && x != xAfterLowerRightCorner
-									&& thisRow[x + 2] && !prevRow[x + 2]) { //at lower right corner & next pxl selected
+									&& thisRow[x + 2] && !prevRow[x + 2]) { // at lower right corner & next pxl selected
 								outline[x] = null;
-								//outline[x+1] unchanged
-								outline[x + 1].append(x + 1,y);
+								// outline[x+1] unchanged
+								outline[x + 1].append(x + 1, y);
 								xAfterLowerRightCorner = x + 1;
 								oAfterLowerRightCorner = outline[x + 1];
 							} else {
-								polygons.add(outline[x].getPolygon());   // PLUS (add filled outline)
+								polygons.add(outline[x].getPolygon()); // PLUS (add filled outline)
 								outline[x + 1] = null;
 								outline[x] = x == xAfterLowerRightCorner ? oAfterLowerRightCorner : null;
 							}
 						} else {
 							if (x < w - 1 && y < h && x != xAfterLowerRightCorner
-									&& thisRow[x + 2] && !prevRow[x + 2]) { //at lower right corner && next pxl selected
+									&& thisRow[x + 2] && !prevRow[x + 2]) { // at lower right corner && next pxl
+																			// selected
 								outline[x].append(x + 1, y);
-								outline[x + 1].prepend(x + 1,y);
+								outline[x + 1].prepend(x + 1, y);
 								xAfterLowerRightCorner = x + 1;
 								oAfterLowerRightCorner = outline[x];
-								// outline[x + 1] unchanged (the one at the right-hand side of (x, y-1) to the top)
+								// outline[x + 1] unchanged (the one at the right-hand side of (x, y-1) to the
+								// top)
 								outline[x] = null;
 							} else {
-								outline[x].append(outline[x + 1]);         // merge
+								outline[x].append(outline[x + 1]); // merge
 								for (int x1 = 0; x1 <= w; x1++)
 									if (x1 != x + 1 && outline[x1] == outline[x + 1]) {
-										outline[x1] = outline[x];        // after merging, replace old with merged
-										outline[x + 1] = null;           // no line continues at the right
+										outline[x1] = outline[x]; // after merging, replace old with merged
+										outline[x + 1] = null; // no line continues at the right
 										outline[x] = (x == xAfterLowerRightCorner) ? oAfterLowerRightCorner : null;
 										break;
 									}
@@ -389,27 +432,30 @@ public class ThresholdToSelection implements PlugInFilter {
 					}
 				}
 			}
-			if (y%progressInc==0) {
-				if (Thread.currentThread().isInterrupted()) return null;
+			if (y % progressInc == 0) {
+				if (Thread.currentThread().isInterrupted())
+					return null;
 				if (showStatus)
-					IJ.showProgress(y*(PROGRESS_FRACTION_OUTLINING/h));
+					IJ.showProgress(y * (PROGRESS_FRACTION_OUTLINING / h));
 			}
 		}
-		
-		if (polygons.size()==0)
+
+		if (polygons.size() == 0)
 			return null;
-		if (showStatus) IJ.showStatus("Converting threshold to selection...");
+		if (showStatus)
+			IJ.showStatus("Converting threshold to selection...");
 		GeneralPath path = new GeneralPath(GeneralPath.WIND_EVEN_ODD);
-		progressInc = Math.max(polygons.size()/10, 1);
+		progressInc = Math.max(polygons.size() / 10, 1);
 		for (int i = 0; i < polygons.size(); i++) {
-			path.append((Polygon)polygons.get(i), false);
-			if (Thread.currentThread().isInterrupted()) return null;
-			if (showStatus && i%progressInc==0)
-				IJ.showProgress(PROGRESS_FRACTION_OUTLINING + i*(1.-PROGRESS_FRACTION_OUTLINING)/polygons.size());
+			path.append((Polygon) polygons.get(i), false);
+			if (Thread.currentThread().isInterrupted())
+				return null;
+			if (showStatus && i % progressInc == 0)
+				IJ.showProgress(PROGRESS_FRACTION_OUTLINING + i * (1. - PROGRESS_FRACTION_OUTLINING) / polygons.size());
 		}
 
 		ShapeRoi shape = new ShapeRoi(path);
-		Roi roi = shape!=null ? shape.trySimplify():null; // try to convert to non-composite ROI
+		Roi roi = shape != null ? shape.trySimplify() : null; // try to convert to non-composite ROI
 		if (showStatus)
 			IJ.showProgress(1.0);
 		return roi;
