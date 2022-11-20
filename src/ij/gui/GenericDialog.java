@@ -1009,7 +1009,6 @@ public class GenericDialog extends Dialog implements ActionListener, TextListene
 		defaultValues.addElement(Double.valueOf(defaultValue / scale));
 		defaultText.addElement(tf.getText());
 		tf.setEditable(true);
-		firstSlider = false;
 
 		Panel panel = new Panel();
 		GridBagLayout pgrid = new GridBagLayout();

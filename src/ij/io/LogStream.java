@@ -1,6 +1,8 @@
 package ij.io;
 
 import ij.IJ;
+import ij.IJLog;
+
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
