@@ -153,7 +153,7 @@ public class AutoThresholder {
 				break;
 			}
 		}
-		term = 1.0 / (double) (last_bin - first_bin);
+		term = 1.0 / (last_bin - first_bin);
 		double[] mu_0 = new double[256];
 		sum_pix = num_pix = 0;
 		for (ih = first_bin; ih < 256; ih++) {
@@ -169,7 +169,7 @@ public class AutoThresholder {
 			sum_pix += (double) ih * data[ih];
 			num_pix += data[ih];
 			/* NUM_PIX cannot be zero ! */
-			mu_1[ih - 1] = sum_pix / (double) num_pix;
+			mu_1[ih - 1] = sum_pix / num_pix;
 		}
 
 		/* Determine the threshold that minimizes the fuzzy entropy */
@@ -353,7 +353,6 @@ public class AutoThresholder {
 		int[] data2 = new int[n];
 		int mode = 0, maxCount = 0;
 		for (int i = 0; i < n; i++) {
-			int count = data[i];
 			data2[i] = data[i];
 			if (data2[i] > maxCount) {
 				maxCount = data2[i];
@@ -396,7 +395,6 @@ public class AutoThresholder {
 			return level;
 		}
 		int movingIndex = min;
-		int inc = Math.max(max / 40, 1);
 		do {
 			sum1 = sum2 = sum3 = sum4 = 0.0;
 			for (int i = min; i <= movingIndex; i++) {
@@ -467,7 +465,7 @@ public class AutoThresholder {
 				sum_back += (double) ih * data[ih];
 				num_back += data[ih];
 			}
-			mean_back = (num_back == 0 ? 0.0 : (sum_back / (double) num_back));
+			mean_back = (num_back == 0 ? 0.0 : (sum_back / num_back));
 			/* Object */
 			sum_obj = 0;
 			num_obj = 0;
@@ -475,17 +473,8 @@ public class AutoThresholder {
 				sum_obj += (double) ih * data[ih];
 				num_obj += data[ih];
 			}
-			mean_obj = (num_obj == 0 ? 0.0 : (sum_obj / (double) num_obj));
+			mean_obj = (num_obj == 0 ? 0.0 : (sum_obj / num_obj));
 
-			/* Calculate the new threshold: Equation (7) in Ref. 2 */
-			// new_thresh = simple_round ( ( mean_back - mean_obj ) / ( Math.log ( mean_back
-			// ) - Math.log ( mean_obj ) ) );
-			// simple_round ( double x ) {
-			// return ( int ) ( IS_NEG ( x ) ? x - .5 : x + .5 );
-			// }
-			//
-			// #define IS_NEG( x ) ( ( x ) < -DBL_EPSILON )
-			// DBL_EPSILON = 2.220446049250313E-16
 			temp = (mean_back - mean_obj) / (Math.log(mean_back) - Math.log(mean_obj));
 
 			if (temp < -2.220446049250313E-16)

@@ -90,7 +90,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private boolean scaleToFit;
 	private boolean painted;
 	private boolean hideZoomIndicator;
-	private boolean flattening;
 	private Timer pressTimer;
 	private PopupMenu roiPopupMenu;
 	private static int longClickDelay = 1000; // ms

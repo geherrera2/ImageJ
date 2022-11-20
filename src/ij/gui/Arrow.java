@@ -212,7 +212,6 @@ public class Arrow extends Line {
 				points[1 * 2] = (float) (points[2 * 3] - length * Math.cos(alpha));
 				points[1 * 2 + 1] = (float) (points[2 * 3 + 1] - length * Math.sin(alpha));
 				SL = length * Math.sin(base) / Math.sin(base + tip);
-				;
 				break;
 			case OPEN:
 				tip = Math.toRadians(25); // 30
@@ -238,7 +237,7 @@ public class Arrow extends Line {
 
 	private Shape getShape() {
 		Shape arrow = getPath();
-		BasicStroke stroke = new BasicStroke((float) getStrokeWidth(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER);
+		BasicStroke stroke = new BasicStroke(getStrokeWidth(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER);
 		Shape outlineShape = stroke.createStrokedShape(arrow);
 		Area a1 = new Area(arrow);
 		Area a2 = new Area(outlineShape);

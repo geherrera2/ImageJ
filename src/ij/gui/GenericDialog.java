@@ -61,7 +61,6 @@ public class GenericDialog extends Dialog implements ActionListener, TextListene
 	private int nfIndex, sfIndex, cbIndex, choiceIndex, textAreaIndex, radioButtonIndex;
 	private GridBagConstraints c;
 	private boolean firstNumericField = true;
-	private boolean firstSlider = true;
 	private boolean invalidNumber;
 	private String errorMessage;
 	private Hashtable labels;
@@ -87,7 +86,6 @@ public class GenericDialog extends Dialog implements ActionListener, TextListene
 	protected static GenericDialog instance;
 	private boolean firstPaint = true;
 	private boolean fontSizeSet;
-	private boolean showDialogCalled;
 	private boolean optionsRecorded; // have dialogListeners been called to record options?
 	private Label lastLabelAdded;
 	private int[] windowIDs;
@@ -101,10 +99,6 @@ public class GenericDialog extends Dialog implements ActionListener, TextListene
 	 */
 	public GenericDialog(String title) {
 		this(title, null);
-	}
-
-	private static Frame getParentFrame() {
-		return null;
 	}
 
 	/** Creates a new GenericDialog using the specified title and parent frame. */
@@ -302,7 +296,6 @@ public class GenericDialog extends Dialog implements ActionListener, TextListene
 			label2 = label2.replace('_', ' ');
 		Label fieldLabel = makeLabel(label2);
 		this.lastLabelAdded = fieldLabel;
-		boolean custom = customInsets;
 		if (addToSameRow) {
 			c.gridx = GridBagConstraints.RELATIVE;
 			addToSameRow = false;
@@ -373,7 +366,7 @@ public class GenericDialog extends Dialog implements ActionListener, TextListene
 		GridBagLayout layout = (GridBagLayout) getLayout();
 		GridBagConstraints constraints = layout.getConstraints(text);
 		Button button = new TrimmedButton("Browse", IJ.isMacOSX() ? 10 : 0);
-		BrowseButtonListener listener = new BrowseButtonListener(label, text, "dir");
+		BrowseButtonListener listener = new BrowseButtonListener(text, "dir");
 		button.addActionListener(listener);
 		Panel panel = new Panel();
 		panel.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
@@ -405,7 +398,7 @@ public class GenericDialog extends Dialog implements ActionListener, TextListene
 		GridBagLayout layout = (GridBagLayout) getLayout();
 		GridBagConstraints constraints = layout.getConstraints(text);
 		Button button = new TrimmedButton("Browse", IJ.isMacOSX() ? 10 : 0);
-		BrowseButtonListener listener = new BrowseButtonListener(label, text, "file");
+		BrowseButtonListener listener = new BrowseButtonListener(text, "file");
 		button.addActionListener(listener);
 		Panel panel = new Panel();
 		panel.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
@@ -620,7 +613,6 @@ public class GenericDialog extends Dialog implements ActionListener, TextListene
 		Panel panel = new Panel();
 		int nRows = headings != null ? rows + 1 : rows;
 		panel.setLayout(new GridLayout(nRows, columns, 6, 0));
-		int startCBIndex = cbIndex;
 		if (checkbox == null)
 			checkbox = new Vector(12);
 		if (headings != null) {
@@ -1227,7 +1219,7 @@ public class GenericDialog extends Dialog implements ActionListener, TextListene
 		String theText = tf.getText();
 		String label = null;
 		if (macro) {
-			label = (String) labels.get((Object) tf);
+			label = (String) labels.get(tf);
 			theText = Macro.getValue(macroOptions, label, theText);
 		}
 		String originalText = (String) defaultText.elementAt(nfIndex);
@@ -2084,12 +2076,10 @@ public class GenericDialog extends Dialog implements ActionListener, TextListene
 	}
 
 	private class BrowseButtonListener implements ActionListener {
-		private String label;
 		private TextField textField;
 		private String mode;
 
-		public BrowseButtonListener(String label, TextField textField, String mode) {
-			this.label = label;
+		public BrowseButtonListener(TextField textField, String mode) {
 			this.textField = textField;
 			this.mode = mode;
 		}

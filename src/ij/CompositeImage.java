@@ -1,8 +1,6 @@
 package ij;
 
 import ij.process.*;
-import ij.gui.*;
-import ij.plugin.*;
 import ij.plugin.frame.*;
 import ij.io.FileInfo;
 import java.awt.*;
@@ -205,7 +203,6 @@ public class CompositeImage extends ImagePlus {
 	public synchronized void updateImage() {
 		int imageSize = width * height;
 		int nChannels = getNChannels();
-		int redValue, greenValue, blueValue;
 		int ch = getChannel();
 
 		// IJLog.log("updateImage: "+ch+"/"+nChannels+" "+currentSlice+"
@@ -233,7 +230,7 @@ public class CompositeImage extends ImagePlus {
 				if (!IJ.isMacro())
 					ContrastAdjuster.update();
 				for (int i = 0; i < MAX_CHANNELS; i++)
-					active[i] = i == currentChannel ? true : false;
+					active[i] = i == currentChannel;
 				Channels.updateChannels();
 			}
 			if (ip != null)
@@ -813,7 +810,6 @@ public class CompositeImage extends ImagePlus {
 		rgbPixels = null;
 		awtImage = null;
 		channelLuts = null;
-		boolean[] active = new boolean[MAX_CHANNELS];
 	}
 
 }

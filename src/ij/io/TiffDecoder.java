@@ -2,9 +2,10 @@ package ij.io;
 
 import ij.util.Tools;
 import ij.IJ;
+import ij.IJLog;
+
 import java.io.*;
 import java.util.*;
-import java.net.*;
 
 /**
  * Decodes single and multi-image TIFF files. The LZW decompression
@@ -104,7 +105,7 @@ public class TiffDecoder {
 	}
 
 	final long getUnsignedInt() throws IOException {
-		return (long) getInt() & 0xffffffffL;
+		return getInt() & 0xffffffffL;
 	}
 
 	final int getShort() throws IOException {
@@ -118,9 +119,9 @@ public class TiffDecoder {
 
 	final long readLong() throws IOException {
 		if (littleEndian)
-			return ((long) getInt() & 0xffffffffL) + ((long) getInt() << 32);
+			return (getInt() & 0xffffffffL) + ((long) getInt() << 32);
 		else
-			return ((long) getInt() << 32) + ((long) getInt() & 0xffffffffL);
+			return (getInt() << 32) + (getInt() & 0xffffffffL);
 		// return
 		// in.read()+(in.read()<<8)+(in.read()<<16)+(in.read()<<24)+(in.read()<<32)+(in.read()<<40)+(in.read()<<48)+(in.read()<<56);
 	}
@@ -142,17 +143,14 @@ public class TiffDecoder {
 			in.close();
 			return -1;
 		}
-		int magicNumber = getShort(); // 42
-		long offset = ((long) getInt()) & 0xffffffffL;
+		long offset = (getInt()) & 0xffffffffL;
 		return offset;
 	}
 
 	int getValue(int fieldType, int count) throws IOException {
 		int value = 0;
-		int unused;
 		if (fieldType == SHORT && count == 1) {
 			value = getShort();
-			unused = getShort();
 		} else
 			value = getInt();
 		return value;
@@ -284,7 +282,6 @@ public class TiffDecoder {
 		// density calibration
 		in.seek(offset + 182);
 		int fitType = in.read();
-		int unused = in.read();
 		int nCoefficients = in.readShort();
 		if (fitType == 11) {
 			fi.calibrationFunction = 21; // Calibration.UNCALIBRATED_OD
@@ -336,7 +333,6 @@ public class TiffDecoder {
 		if (nImages >= 2 && (fi.fileType == FileInfo.GRAY8 || fi.fileType == FileInfo.COLOR8)) {
 			fi.nImages = nImages;
 			fi.pixelDepth = in.readFloat(); // SliceSpacing
-			int skip = in.readShort(); // CurrentSlice
 			fi.frameInterval = in.readFloat();
 		}
 
@@ -348,8 +344,8 @@ public class TiffDecoder {
 		in.seek(saveLoc);
 	}
 
-	void dumpTag(int tag, int count, int value, FileInfo fi) {
-		long lvalue = ((long) value) & 0xffffffffL;
+	void dumpTag(int tag, int count, int value) {
+		long lvalue = (value) & 0xffffffffL;
 		String name = getName(tag);
 		String cs = (count == 1) ? "" : ", count=" + count;
 		dInfo += "    " + tag + ", \"" + name + "\", value=" + lvalue + cs + "\n";
@@ -475,9 +471,9 @@ public class TiffDecoder {
 			fieldType = getShort();
 			count = getInt();
 			value = getValue(fieldType, count);
-			long lvalue = ((long) value) & 0xffffffffL;
+			long lvalue = (value) & 0xffffffffL;
 			if (debugMode && ifdCount < 10)
-				dumpTag(tag, count, value, fi);
+				dumpTag(tag, count, value);
 			switch (tag) {
 				case IMAGE_WIDTH:
 					fi.width = value;
@@ -498,7 +494,7 @@ public class TiffDecoder {
 						in.seek(saveLoc);
 					}
 					fi.offset = count > 0 ? fi.stripOffsets[0] : value;
-					if (count > 1 && (((long) fi.stripOffsets[count - 1]) & 0xffffffffL) < (((long) fi.stripOffsets[0])
+					if (count > 1 && ((fi.stripOffsets[count - 1]) & 0xffffffffL) < ((fi.stripOffsets[0])
 							& 0xffffffffL))
 						fi.offset = fi.stripOffsets[count - 1];
 					break;
@@ -707,10 +703,8 @@ public class TiffDecoder {
 	void getMetaData(int loc, FileInfo fi) throws IOException {
 		if (metaDataCounts == null || metaDataCounts.length == 0)
 			return;
-		int maxTypes = 10;
 		long saveLoc = in.getLongFilePointer();
 		in.seek(loc);
-		int n = metaDataCounts.length;
 		int hdrSize = metaDataCounts[0];
 		if (hdrSize < 12 || hdrSize > 804) {
 			in.seek(saveLoc);
@@ -941,7 +935,7 @@ public class TiffDecoder {
 			FileInfo fi = OpenIFD();
 			if (fi != null) {
 				list.add(fi);
-				ifdOffset = ((long) getInt()) & 0xffffffffL;
+				ifdOffset = (getInt()) & 0xffffffffL;
 			} else
 				ifdOffset = 0L;
 			if (debugMode && ifdCount < 10)

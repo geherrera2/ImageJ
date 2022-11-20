@@ -17,7 +17,6 @@ import java.awt.GraphicsEnvironment;
 public class Executer implements Runnable {
 
 	private static String previousCommand;
-	private static CommandListener listener;
 	private static Vector listeners = new Vector();
 
 	private String command;
