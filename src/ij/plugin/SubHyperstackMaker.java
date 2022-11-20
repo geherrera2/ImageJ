@@ -1,4 +1,5 @@
 package ij.plugin;
+
 import ij.*;
 import ij.gui.GenericDialog;
 import ij.process.ImageProcessor;
@@ -10,7 +11,7 @@ import java.awt.Color;
 /**
  * This plugin is used by the Image/Stacks/Tools/Make Substack
  * command to create substacks of hyperstacks.
- *  
+ * 
  * @author Curtis Rueden
  */
 public class SubHyperstackMaker implements PlugIn {
@@ -36,12 +37,16 @@ public class SubHyperstackMaker implements PlugIn {
 		// prompt for C, Z and T ranges
 		GenericDialog gd = new GenericDialog("Subhyperstack Maker");
 		gd.addMessage("Enter a range (e.g. 2-14), a range with increment\n"
-			+ "(e.g. 1-100-2) or a list (e.g. 7,9,25,27)", null, Color.darkGray);
-		if (hasC) gd.addStringField("Channels:", "1-" + cCount, 40);
-		if (hasZ) gd.addStringField("Slices:", "1-" + zCount, 40);
-		if (hasT) gd.addStringField("Frames:", "1-" + tCount, 40);
+				+ "(e.g. 1-100-2) or a list (e.g. 7,9,25,27)", null, Color.darkGray);
+		if (hasC)
+			gd.addStringField("Channels:", "1-" + cCount, 40);
+		if (hasZ)
+			gd.addStringField("Slices:", "1-" + zCount, 40);
+		if (hasT)
+			gd.addStringField("Frames:", "1-" + tCount, 40);
 		gd.showDialog();
-		if (gd.wasCanceled()) return;
+		if (gd.wasCanceled())
+			return;
 		String cString = hasC ? gd.getNextString() : "1";
 		String zString = hasZ ? gd.getNextString() : "1";
 		String tString = hasT ? gd.getNextString() : "1";
@@ -60,7 +65,8 @@ public class SubHyperstackMaker implements PlugIn {
 		return makeSubhyperstack(input, cList, zList, tList);
 	}
 
-	public static ImagePlus makeSubhyperstack(ImagePlus input, List<Integer> cList, List<Integer> zList, List<Integer> tList) {
+	public static ImagePlus makeSubhyperstack(ImagePlus input, List<Integer> cList, List<Integer> zList,
+			List<Integer> tList) {
 		// validate inputs
 		if (cList.size() == 0)
 			throw new IllegalArgumentException("Must specify at least one channel");
@@ -84,8 +90,10 @@ public class SubHyperstackMaker implements PlugIn {
 
 		// create output image
 		String title = WindowManager.getUniqueName(input.getTitle());
-		ImagePlus output = IJ.createHyperStack(title, input.getWidth(), input.getHeight(), cList.size(), zList.size(), tList.size(), input.getBitDepth());
-		//ImagePlus output = input.createHyperStack(title, cList.size(), zList.size(), tList.size(), input.getBitDepth());	
+		ImagePlus output = IJ.createHyperStack(title, input.getWidth(), input.getHeight(), cList.size(), zList.size(),
+				tList.size(), input.getBitDepth());
+		// ImagePlus output = input.createHyperStack(title, cList.size(), zList.size(),
+		// tList.size(), input.getBitDepth());
 		ImageStack outputStack = output.getImageStack();
 
 		// add specified planes to subhyperstack
@@ -104,7 +112,8 @@ public class SubHyperstackMaker implements PlugIn {
 					ImageProcessor ip = inputStack.getProcessor(i);
 					outputStack.setSliceLabel(label, oi);
 					outputStack.setPixels(ip.getPixels(), oi);
-					//IJ.log("  "+c + "  "+z+"  "+t+"  "+i +" "+oi+"  "+outputStack.getProcessor(1).getPixelValue(0,0));	
+					// IJLog.log(" "+c + " "+z+" "+t+" "+i +" "+oi+"
+					// "+outputStack.getProcessor(1).getPixelValue(0,0));
 				}
 			}
 		}
@@ -113,8 +122,7 @@ public class SubHyperstackMaker implements PlugIn {
 		// propagate composite image settings, if appropriate
 		if (input instanceof CompositeImage) {
 			CompositeImage compositeInput = (CompositeImage) input;
-			CompositeImage compositeOutput =
-				new CompositeImage(output, compositeInput.getMode());
+			CompositeImage compositeOutput = new CompositeImage(output, compositeInput.getMode());
 			oc = 0;
 			for (int c : cList) {
 				oc++;
@@ -135,7 +143,7 @@ public class SubHyperstackMaker implements PlugIn {
 	private static void check(String name, int index, int count) {
 		if (index < 1 || index > count) {
 			throw new IllegalArgumentException("Invalid " + name + " index: " +
-				index);
+					index);
 		}
 	}
 

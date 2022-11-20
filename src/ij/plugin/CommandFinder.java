@@ -54,7 +54,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 	private Hashtable commandsHash;
 	private String[] commands;
 	private static boolean closeWhenRunning = Prefs.get("command-finder.close", false);
-	private static boolean applyLUT; 
+	private static boolean applyLUT;
 	private JTable table;
 	private TableModel tableModel;
 	private int lastClickedRow;
@@ -189,7 +189,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		Hashtable table = Menus.getCommands();
 		String className = (String) table.get(cmd);
 		if (IJ.debugMode)
-			IJ.log("showSource: " + cmd + "   " + className);
+			IJLog.log("showSource: " + cmd + "   " + className);
 		if (className == null) {
 			error("No source associated with this command:\n  " + cmd);
 			return;
@@ -336,7 +336,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 				}
 				if (imp.getBitDepth() != 24) {
 					if (imp.isComposite())
-						((CompositeImage)imp).setChannelColorModel(LutLoader.getLut(cmd));
+						((CompositeImage) imp).setChannelColorModel(LutLoader.getLut(cmd));
 					else {
 						ImageProcessor ip = imp.getProcessor();
 						ip.setColorModel(LutLoader.getLut(cmd));
@@ -415,9 +415,10 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 	 * the same screen location.
 	 *
 	 * @param initialSearch
-	 *            The search string that populates Command Finder's search
-	 *            field. It is ignored if contains an invalid query (ie, if it
-	 *            is either <tt>null</tt> or <tt>empty</tt>).
+	 *                      The search string that populates Command Finder's search
+	 *                      field. It is ignored if contains an invalid query (ie,
+	 *                      if it
+	 *                      is either <tt>null</tt> or <tt>empty</tt>).
 	 */
 	public void run(String initialSearch) {
 		if (frame != null) {
@@ -664,14 +665,14 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 
 		public String getColumnName(int column) {
 			switch (column) {
-			case 0:
-				return "Command";
-			case 1:
-				return "Menu Path";
-			case 2:
-				return "Class";
-			case 3:
-				return "File";
+				case 0:
+					return "Command";
+				case 1:
+					return "Menu Path";
+				case 2:
+					return "Class";
+				case 3:
+					return "File";
 			}
 			return null;
 		}
