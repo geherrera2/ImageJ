@@ -92,7 +92,7 @@ public class Converter implements PlugIn {
 				else if (item.equals("HSB Stack"))
 					new StackConverter(imp).convertToHSBHyperstack();
 				else if (item.equals("HSB (32-bit)"))
-					new StackConverter(imp).convertToHSB32Hyperstack();
+					new StackConverter(imp).convertToHSBHyperstack();
 				else if (item.equals("Lab Stack"))
 					new StackConverter(imp).convertToLabHyperstack();
 				else if (item.equals("8-bit Color")) {
