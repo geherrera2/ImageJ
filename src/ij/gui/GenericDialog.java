@@ -1535,7 +1535,6 @@ public class GenericDialog extends Dialog implements ActionListener, TextListene
 
 	/** Displays this dialog box. */
 	public void showDialog() {
-		showDialogCalled = true;
 		if (macro) {
 			dispose();
 			recorderOn = Recorder.record && Recorder.recordInMacros;
