@@ -1,6 +1,7 @@
 package ij.macro;
 
 import ij.IJ;
+import ij.IJLog;
 import ij.plugin.MacroInstaller;
 import ij.plugin.Startup;
 

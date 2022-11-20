@@ -1,6 +1,8 @@
 package ij.process;
 
 import ij.IJ;
+import ij.IJLog;
+
 import java.util.Arrays;
 
 /**

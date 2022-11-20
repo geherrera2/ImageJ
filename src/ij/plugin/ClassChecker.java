@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ij.IJ;
+import ij.IJLog;
 import ij.Menus;
 import ij.Prefs;
 import ij.util.StringSorter;

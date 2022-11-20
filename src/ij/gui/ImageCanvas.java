@@ -317,7 +317,6 @@ public class ImageCanvas extends Canvas implements MouseListener, MouseMotionLis
 	private void drawOverlay(Overlay overlay, Graphics g) {
 		if (imp != null && imp.getHideOverlay() && overlay != showAllOverlay)
 			return;
-		flattening = imp != null && ImagePlus.flattenTitle.equals(imp.getTitle());
 		if (imp != null && showAllOverlay != null && overlay != showAllOverlay)
 			overlay.drawLabels(false);
 		Color labelColor = overlay.getLabelColor();
